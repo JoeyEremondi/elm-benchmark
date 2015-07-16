@@ -3,6 +3,7 @@ module Benchmark
     , Benchmark
     , Suite (..)
     , run
+    , runWithProgress
     , bench1
     , bench2
     , bench3
@@ -20,7 +21,7 @@ of pure functions to be evaluated.
 @docs Never, Benchmark, Suite
 
 # Running benchmarks
-@docs run
+@docs run, runWithProgress
 
 # Creating benchmarks
 @docs bench1, bench2, bench3, bench4, bench5, bench6, bench7, bench8, bench9
@@ -30,6 +31,7 @@ of pure functions to be evaluated.
 import Task
 import String
 import Native.Benchmark
+import Signal
 
 
 {-|
@@ -47,6 +49,16 @@ type Benchmark =
     Benchmark
 
 
+type BenchStats = 
+  BenchStats 
+  { name : String
+  , hz : Float
+  , marginOfError : Float
+  , moePercent : Float
+--  , numRunsSampled : Int
+  }
+
+
 {-|
 A single or collection of benchmarks
 that can be run, generating output
@@ -57,10 +69,19 @@ type Suite =
 
 
 {-|
-Run a benchmark, generating a string summarizing the results
+Run a benchmark, generating a list of results for each benchmark
+and updating a String signal with progress as the benchmarks run
 |-}
 run : Suite -> Task.Task Never String
-run = Native.Benchmark.run 
+run = runWithProgress Nothing
+
+
+{-|
+Run a benchmark, generating a list of results for each benchmark
+and updating a String signal with progress as the benchmarks run
+|-}
+runWithProgress : Maybe (Signal.Mailbox String) -> Suite -> Task.Task Never String
+runWithProgress = Native.Benchmark.runWithProgress 
 
 
 

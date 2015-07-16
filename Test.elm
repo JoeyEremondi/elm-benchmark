@@ -9,8 +9,8 @@ main =
 
 mySuite =
   Benchmark.Suite "My Suite" 
-  [ Benchmark.bench1 "FastFib" fastFib 10
-  , Benchmark.bench1 "SlowFib" slowFib 10
+  [ Benchmark.bench1 "FastFib" fastFib 16
+  , Benchmark.bench1 "SlowFib" slowFib 16
   ]
 
 results : Signal.Mailbox String
@@ -19,7 +19,8 @@ results =
 
 port benchResults : (Task Benchmark.Never ())
 port benchResults =
-  Benchmark.run mySuite `andThen` Signal.send results.address
+  Benchmark.runWithProgress (Just results) mySuite `andThen` \_ -> Task.succeed ()
+  -- `andThen` Signal.send results.address
 
 slowFib : Int -> Int
 slowFib x = case (x < 0, x) of
