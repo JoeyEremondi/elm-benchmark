@@ -31,6 +31,7 @@ of pure functions to be evaluated.
 import Task
 import String
 import Native.Benchmark
+import Native.BenchmarkJS
 import Signal
 
 
