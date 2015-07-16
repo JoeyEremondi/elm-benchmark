@@ -3945,6 +3945,7 @@ Elm.Native.Benchmark.make = function(localRuntime) {
 	    return Task.asyncFunction(function(callback) {
                 var bjsSuite = new Benchmark.Suite;
                 var benchArray;
+                var retString = "";
                 switch (inSuite.ctor)
                 {
                     case "Suite":
@@ -3958,9 +3959,12 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                 {
                     bjsSuite.add(benchArray[i].name, benchArray[i].thunk );
                 }
+                bjsSuite.on('cycle', function(event) {
+                   retString += String(event.target) + "\n";
+                });
                 bjsSuite.on('complete', function(event) {
-                   return callback(Task.succeed(String(event.target)));
-                })
+                   return callback(Task.succeed(retString));
+                });
                 bjsSuite.run();
             } );
         }
