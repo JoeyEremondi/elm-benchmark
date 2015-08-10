@@ -8,19 +8,21 @@ Elm.Native.Benchmark.make = function(localRuntime) {
 		return localRuntime.Native.Benchmark.values;
 	}
 
-	//var Dict = Elm.Dict.make(localRuntime);
 	var List = Elm.Native.List.make(localRuntime);
-	//var Maybe = Elm.Maybe.make(localRuntime);
 	var Task = Elm.Native.Task.make(localRuntime);
         var Signal = Elm.Signal.make(localRuntime);
         var Utils = Elm.Native.Utils.make(localRuntime);
 
+        //Nothing special happens here, but we need to use it as a Native function
+        //So that we can accept thunks of any type
         function makeBenchmark(name, thunk)
         {
             return {name : name, thunk : thunk};
         }
 
-
+        //Generate the task for running a benchmark suite
+        //Possibly updating a given mailbox with a string describing
+        //Our progress of running the benchmarks so far
 	function runWithProgress(maybeTaskFn, inSuite)
 	{
             
@@ -41,9 +43,11 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                       benchArray = [inSuite._0 ];
                       break;
                 }
+
                 numToRun = benchArray.length;
                 Task.perform(maybeTaskFn("Running benchmark 1 of " + numToRun));
 
+                //Initialize each benchmark in the suite
                 for (i = 0; i < benchArray.length; i++)
                 {
                     var ourThunk = function (){
@@ -53,6 +57,9 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                         }
                     bjsSuite.add(benchArray[i].name, benchArray[i].thunk );
                 }
+
+                //Every time a benchmark finishes, we store its results
+                //and update our progress string
                 bjsSuite.on('cycle', function(event) {
                    numCompleted += 1;
                    retData.push(
@@ -71,11 +78,15 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                    Task.perform(maybeTaskFn(intermedString));
                    //retString += String(event.target) + "\n";
                 });
+                
+                //When the last benchmark finishes, we show all results collected
                 bjsSuite.on('complete', function(event) {
                    finalString = "Final results:\n\n" + finalString;
                    Task.perform(maybeTaskFn(finalString) );
                    return callback(Task.succeed(Utils.Tuple2(finalString, retData)));
                 });
+
+                //Finally: actually run the suite
                 Task.perform(
                   Task.asyncFunction(function(otherCallback){
                       bjsSuite.run({ 'async': true });
