@@ -9,8 +9,10 @@ main =
 
 mySuite =
   Benchmark.Suite "My Suite" 
-  [ Benchmark.bench1 "FastFib" fastFib 16
-  , Benchmark.bench1 "SlowFib" slowFib 16
+  [ Benchmark.bench1 "FastFib 16" fastFib 16
+  , Benchmark.bench1 "SlowFib 16" slowFib 16
+  , Benchmark.bench1 "FastFib 8" fastFib 8
+  , Benchmark.bench1 "SlowFib 8" slowFib 8
   ]
 
 results : Signal.Mailbox String

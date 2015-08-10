@@ -13,6 +13,7 @@ Elm.Native.Benchmark.make = function(localRuntime) {
 	//var Maybe = Elm.Maybe.make(localRuntime);
 	var Task = Elm.Native.Task.make(localRuntime);
         var Signal = Elm.Signal.make(localRuntime);
+        var Utils = Elm.Native.Utils.make(localRuntime);
 
         function makeBenchmark(name, thunk)
         {
@@ -20,7 +21,7 @@ Elm.Native.Benchmark.make = function(localRuntime) {
         }
 
 
-	function runWithProgress(maybeMailbox, inSuite)
+	function runWithProgress(maybeTaskFn, inSuite)
 	{
             
 	    return Task.asyncFunction(function(callback) {
@@ -28,7 +29,7 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                 var benchArray;
                 var retData = [];
                 var finalString = "";
-                Task.perform(A2(Signal.send, maybeMailbox._0.address, String("Starting benchmarks")) );
+                Task.perform(maybeTaskFn("Starting Benchmarks"));
                 switch (inSuite.ctor)
                 {
                     case "Suite":
@@ -40,6 +41,11 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                 }
                 for (i = 0; i < benchArray.length; i++)
                 {
+                    var ourThunk = function (){
+                        //Run the thing we're timing, then mark the asynch benchmark as done
+                        benchArray[i].thunk();
+                        deferred.resolve();
+                        }
                     bjsSuite.add(benchArray[i].name, benchArray[i].thunk );
                 }
                 bjsSuite.on('cycle', function(event) {
@@ -50,36 +56,28 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                        , moePercent : event.target.stats.rme
                        }
                        );
-                   switch (maybeMailbox.ctor)
-                     {
-                         case "Nothing":
-                           break;
-                         case "Just":
-                           console.log("Just " + String(event.target.count));
-                           Task.perform(A2(Signal.send, maybeMailbox._0.address, String(event.target)) );
-                           finalString += String(event.target) + "\n";
-                           break;
-                     }
+                   finalString += String(event.target) + "\n";
+                   console.log("Progress ");
+                   var intermedString = String(event.target);
+                   Task.perform(maybeTaskFn(intermedString));
                    //retString += String(event.target) + "\n";
                 });
                 bjsSuite.on('complete', function(event) {
-                   switch (maybeMailbox.ctor)
-                     {
-                         case "Nothing":
-                           break;
-                         case "Just":
-                           Task.perform(A2(Signal.send, maybeMailbox._0.address, String(finalString)) );
-                           finalString += String(event.target) + "\n";
-                     }
-                   return callback(Task.succeed(retData));
+                   finalString = "Final results:\n\n" + finalString;
+                   Task.perform(maybeTaskFn(finalString) );
+                   return callback(Task.succeed(Utils.Tuple2(finalString, retData)));
                 });
-                bjsSuite.run();
-            } );
-        }
-             
+                Task.perform(
+                  Task.asyncFunction(function(otherCallback){
+                      bjsSuite.run({ 'async': true });
+                  }));
+        });
+             }
 
 	return localRuntime.Native.Benchmark.values = {
 		makeBenchmark: F2(makeBenchmark),
 		runWithProgress: F2(runWithProgress)
 	};
+                
+   
 };
