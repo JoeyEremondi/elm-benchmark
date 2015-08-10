@@ -81,9 +81,8 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                 
                 //When the last benchmark finishes, we show all results collected
                 bjsSuite.on('complete', function(event) {
-                   finalString = "Final results:\n\n" + finalString;
-                   Task.perform(maybeTaskFn(finalString) );
-                   return callback(Task.succeed(Utils.Tuple2(finalString, retData)));
+                   Task.perform(maybeTaskFn("Final results:\n\n" + finalString) );
+                   return callback(Task.succeed(Utils.Tuple2(finalString, List.fromArray(retData))));
                 });
 
                 //Finally: actually run the suite

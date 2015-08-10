@@ -80,7 +80,9 @@ Run a benchmark, generating a list of results for each benchmark.
 Results contain a pretty-printed string summary, and a list
 of detailed data for each benchmark.
 |-}
-run : Suite -> Task.Task Never (String, BenchStats)
+run 
+  :  Suite 
+  -> Task.Task Never (String, List BenchStats)
 run = runWithProgress Nothing
 
 
@@ -88,7 +90,10 @@ run = runWithProgress Nothing
 Run a benchmark, generating a list of results for each benchmark
 and updating a String signal with progress as the benchmarks run
 |-}
-runWithProgress : Maybe (Signal.Mailbox String) -> Suite -> Task.Task Never (String, BenchStats)
+runWithProgress 
+  :  Maybe (Signal.Mailbox String) 
+  -> Suite 
+  -> Task.Task Never (String, List BenchStats)
 runWithProgress maybeMailbox suite = 
   let
     ourTask = 
