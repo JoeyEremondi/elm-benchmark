@@ -57,7 +57,6 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                        }
                        );
                    finalString += String(event.target) + "\n";
-                   console.log("Progress ");
                    var intermedString = String(event.target);
                    Task.perform(maybeTaskFn(intermedString));
                    //retString += String(event.target) + "\n";
