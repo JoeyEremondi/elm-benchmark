@@ -29,7 +29,9 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                 var benchArray;
                 var retData = [];
                 var finalString = "";
-                Task.perform(maybeTaskFn("Starting Benchmarks"));
+                var numCompleted = 0;
+                var numToRun;
+                
                 switch (inSuite.ctor)
                 {
                     case "Suite":
@@ -39,6 +41,9 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                       benchArray = [inSuite._0 ];
                       break;
                 }
+                numToRun = benchArray.length;
+                Task.perform(maybeTaskFn("Running benchmark 1 of " + numToRun));
+
                 for (i = 0; i < benchArray.length; i++)
                 {
                     var ourThunk = function (){
@@ -49,6 +54,7 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                     bjsSuite.add(benchArray[i].name, benchArray[i].thunk );
                 }
                 bjsSuite.on('cycle', function(event) {
+                   numCompleted += 1;
                    retData.push(
                        { name : event.target.options.name
                        , hz : event.target.hz
@@ -57,7 +63,11 @@ Elm.Native.Benchmark.make = function(localRuntime) {
                        }
                        );
                    finalString += String(event.target) + "\n";
-                   var intermedString = String(event.target);
+                   var intermedString = 
+                        "Running benchmark " 
+                        + (numCompleted + 1) 
+                        + " of " + numToRun 
+                        + "\nLast result: " + String(event.target);
                    Task.perform(maybeTaskFn(intermedString));
                    //retString += String(event.target) + "\n";
                 });
